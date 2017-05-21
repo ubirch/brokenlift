@@ -11,6 +11,7 @@ int transmittingData = 0;
 
 // contains timestamp of each event as string
 String eventTimestamps = "";
+int maxDataLength = 240;
 int eventCounter = -1;
 String timestampSep = ";";
 
@@ -21,11 +22,12 @@ int txCounter = 0;
 long lastEvent = 0;
 
 // defines how often data gets published to the cloud, in seconds
-long publishInterval = 3*60;
+long publishInterval = 30*60;
 // definde min. time between two events in seconds
-long minEventInterval = 1*60;
+long minEventInterval = 5*60;
+
 // defines how often at least data gets published to the cloud, in seconds
-int maxSleep = 60*60;
+int maxSleep = 4*60*60;
 
 int ext1 = D0;
 int ext2 = D1;
@@ -61,6 +63,7 @@ void loop() {
 
   eventCounter++;
   long currenTimestamp = Time.now();
+
   long timeSinceLastPublish = currenTimestamp - lastPublish;
   long timeSinceLastEvent = currenTimestamp - lastEvent;
 
@@ -73,7 +76,7 @@ void loop() {
 
   logDebug("Step  2 / " + String(currenTimestamp) + " / " + String(eventCounter));
 
-  if((timeSinceLastPublish > publishInterval) && (timeSinceLastEvent > minEventInterval) && (eventCounter>0)) {
+  if(((timeSinceLastPublish > publishInterval) && (timeSinceLastEvent > minEventInterval) && (eventCounter>0)) || (strlen(eventTimestamps) > maxDataLength )) {
     logDebug("Step  2.1");
 
     if(!Particle.connected()) {
@@ -104,7 +107,7 @@ void loop() {
 
   logDebug("Step  4");
 
-  System.sleep(wakeup, FALLING, maxSleep);
+  System.sleep(wakeup, CHANGE, maxSleep);
 
 }
 
